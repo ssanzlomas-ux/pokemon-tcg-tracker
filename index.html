@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon TCG - Stock Market Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --green: #22c55e;
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 30px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card-item {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      justify: space-between;
+      border: 1px solid #334155;
+    }
+    .card-header {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .card-img {
+      width: 90px;
+      height: 125px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+    .card-info {
+      flex: 1;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin: 0 0 5px 0;
+    }
+    .card-badge {
+      display: inline-block;
+      background-color: #334155;
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+    }
+    .price-tag {
+      font-size: 1.2rem;
+      color: var(--green);
+      font-weight: bold;
+    }
+    .chart-container {
+      position: relative;
+      height: 150px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .btn-cardmarket {
+      display: block;
+      text-align: center;
+      background-color: #0284c7;
+      color: white;
+      text-decoration: none;
+      padding: 8px;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .btn-cardmarket:hover {
+      background-color: #0369a1;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📈 Pokémon TCG - Mercado de Valores</h1>
+
+  <div class="grid" id="cards-container">
+    <!-- Las cartas y sus gráficas se generarán dinámicamente -->
+  </div>
+
+  <script>
+    // Ejemplo de estructura de datos que recuperas de tu Base de Datos o API
+    const mockData = [
+      {
+        id: "sv03.5-199",
+        nombre: "Charizard ex (151 SIR ES)",
+        mercado: "Español 🇪🇸",
+        imagen: "https://assets.tcgdex.net/es/sv/sv03.5/199/high.png",
+        cardmarketUrl: "https://www.cardmarket.com/en/Pokemon",
+        precioActual: 135.00,
+        historicoFechas: ["Semana 1", "Semana 2", "Semana 3", "Semana 4"],
+        historicoPrecios: [120.00, 125.50, 122.00, 135.00]
+      }
+      // Se replicaría para las 18 cartas
+    ];
+
+    function renderDashboard(data) {
+      const container = document.getElementById('cards-container');
+      
+      data.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'card-item';
+        cardEl.innerHTML = `
+          <div class="card-header">
+            <img src="${card.imagen}" class="card-img" alt="${card.nombre}" loading="lazy">
+            <div class="card-info">
+              <span class="card-badge">${card.mercado}</span>
+              <h2 class="card-title">${card.nombre}</h2>
+              <div class="price-tag">Tendencia: ${card.precioActual.toFixed(2)} €</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-${index}"></canvas>
+          </div>
+          <a href="${card.cardmarketUrl}" target="_blank" class="btn-cardmarket">Comprar en Cardmarket ↗</a>
+        `;
+        container.appendChild(cardEl);
+
+        // Generar Gráfico Chart.js tipo Bolsa
+        const ctx = document.getElementById(`chart-${index}`).getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: card.historicoFechas,
+            datasets: [{
+              label: 'Precio (€)',
+              data: card.historicoPrecios,
+              borderColor: '#38bdf8',
+              backgroundColor: 'rgba(56, 189, 248, 0.1)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2,
+              pointRadius: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+              y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+            }
+          }
+        });
+      });
+    }
+
+    renderDashboard(mockData);
+  </script>
+</body>
+</html>
